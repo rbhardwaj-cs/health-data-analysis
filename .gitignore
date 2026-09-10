@@ -1,0 +1,6 @@
+# Raw personal health data - large files, not appropriate for a public repo
+export.zip
+export.xml
+export_cda.xml
+apple_health_export/
+raw_records.csv
