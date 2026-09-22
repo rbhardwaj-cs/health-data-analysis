@@ -14,6 +14,8 @@ Turns a raw Apple Health export (`export.xml`, 179MB, 4M+ lines) into clean, ana
 4. **`find_cutoff.py`** / **`readings_per_day.py`** — investigate whether an apparent shift in the data reflects a real behavior change or just a tracking artifact (see *What I found*).
 5. **`weekday_weekend.py`** — compares average steps on weekdays vs. weekends over the current, densely-tracked period.
 6. **`speed_vs_steplength.py`** — checks the relationship between walking speed and step length.
+7. **`plot_speed_trend.py`** — plots daily walking speed over time with a 30-day rolling average, marking the date I moved to campus.
+8. **`compare_speed.py`** — compares average walking speed in the 60 days before vs. the 60 days after the move, using equal-length, non-overlapping windows.
 
 ## Tech used
 
@@ -30,8 +32,10 @@ health-data-analysis/
 ├── readings_per_day.py           # tracking-density check, by month
 ├── weekday_weekend.py             # daily_summary.csv -> weekday_vs_weekend.png
 ├── speed_vs_steplength.py          # daily_summary.csv -> speed_vs_steplength.png
+├── plot_speed_trend.py             # daily_summary.csv -> speed_trend.png
+├── compare_speed.py                # before/after move-date comparison (prints results)
 ├── daily_summary.csv          # cleaned daily data (committed — aggregated, not raw)
-├── daily_steps.png, weekday_vs_weekend.png, speed_vs_steplength.png
+├── daily_steps.png, weekday_vs_weekend.png, speed_vs_steplength.png, speed_trend.png
 ├── .gitignore                 # excludes the raw export (size + personal-data privacy)
 └── README.md
 ```
@@ -50,6 +54,8 @@ python3 clean_data.py         # -> daily_summary.csv
 python3 plot_steps.py         # -> daily_steps.png
 python3 weekday_weekend.py    # -> weekday_vs_weekend.png
 python3 speed_vs_steplength.py  # -> speed_vs_steplength.png
+python3 plot_speed_trend.py     # -> speed_trend.png
+python3 compare_speed.py        # -> prints before/after move comparison
 ```
 
 ## What I found
@@ -65,6 +71,10 @@ python3 speed_vs_steplength.py  # -> speed_vs_steplength.png
 
 **3. Walking speed and step length are very strongly correlated (r = 0.978).** Daily average walking speed and step length showed a strong positive correlation. These measures are physically related, and shared measurement methods (both likely derived from the same underlying stride-detection data) may contribute to the association. This analysis does not establish causation or separate genuine behavioral patterns from measurement effects.
 
+**4. Average walking speed increased from 1.886 mph in the 60 days before my move to 2.463 mph in the 60 days after (+30.60%), with complete daily data in both windows.** This period also coincides with moving from India to the United States, changing my daily routes, and deliberately aiming for 10,000 steps a day, so this finding cannot be attributed to campus walking specifically. It shows that my recorded walking speed increased around this lifestyle transition, not that walking on campus caused the increase.
+
+![Walking speed over time](speed_trend.png)
+
 ## Data & privacy
 
 `export.xml` and `raw_records.csv` are intentionally excluded from this repo (see `.gitignore`) for two reasons: they're large (179MB / 25MB), and they contain real personal health data at a fine-grained, timestamped level. `daily_summary.csv` — aggregated to daily totals — is committed, since I'm comfortable sharing that level of detail publicly.
@@ -79,7 +89,6 @@ python3 speed_vs_steplength.py  # -> speed_vs_steplength.png
 ## What's next
 
 - Explore distance and energy-burned trends, not just steps.
-- Look at whether walking speed itself has trended up or down over time.
 - Final polish pass and a proper results write-up.
 
 ## Lessons learned
