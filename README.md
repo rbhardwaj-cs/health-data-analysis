@@ -2,7 +2,7 @@
 
 Cleaning and analyzing 3+ years of my own Apple Health data — steps, distance, energy burned, and walking-quality metrics — to see what my real activity patterns actually look like, and to practice building a real data pipeline from a messy, real-world file.
 
-<!-- TODO: one or two sentences in your own words on why you actually wanted to do this. -->
+I built this project to investigate how my transition from India to USF appeared in my recorded activity patterns. Using my own health data let me work through real data-quality challenges and distinguish measurable trends from assumptions about what caused them.
 
 ## What this does
 
