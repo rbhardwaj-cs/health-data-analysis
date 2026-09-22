@@ -9,7 +9,7 @@ I built this project to investigate how my transition from India to USF appeared
 Turns a raw Apple Health export (`export.xml`, 179MB, 4M+ lines) into clean, analyzable daily data, then explores it:
 
 1. **`extract_data.py`** — streams through the 179MB XML file line-by-line (never loading the whole thing into memory) and pulls out six health metrics, writing them to `raw_records.csv` (337,072 individual readings).
-2. **`clean_data.py`** — aggregates those readings into one row per day (`daily_summary.csv`, 1,254 days), using `sum` for cumulative metrics (steps, distance, energy burned) and `mean` for rate metrics (walking speed, step length) — and explicitly preserves "no data that day" as missing rather than a misleading `0`.
+2. **`clean_data.py`** — aggregates those readings into one row per day, using `sum` for cumulative metrics (steps, distance, energy burned) and `mean` for rate metrics (walking speed, step length) — and explicitly preserves "no data that day" as missing rather than a misleading `0`. The result is reindexed to a complete daily calendar (`daily_summary.csv`, 1,256 days) so a date with zero readings of any type still shows up as a row of `NaN`, rather than silently disappearing.
 3. **`plot_steps.py`** — visualizes daily step count over the full time range.
 4. **`find_cutoff.py`** / **`readings_per_day.py`** — investigate whether an apparent shift in the data reflects a real behavior change or just a tracking artifact (see *What I found*).
 5. **`weekday_weekend.py`** — compares average steps on weekdays vs. weekends over the current, densely-tracked period.
@@ -45,10 +45,12 @@ health-data-analysis/
 ## Setup & usage
 
 ```bash
-pip install pandas matplotlib
+pip install -r requirements.txt
 ```
 
-Get your own export: iPhone Health app → profile icon → **Export All Health Data**, unzip it, place `export.xml` in this folder. Then run the pipeline in order:
+`daily_summary.csv` (the cleaned, aggregated output) is committed to this repo, so you can run any of the plotting/analysis scripts below directly against it without needing your own export.
+
+To regenerate it from scratch: get your own export from iPhone Health app → profile icon → **Export All Health Data**, unzip it, place `export.xml` in this folder. Then run the pipeline in order:
 
 ```bash
 python3 extract_data.py       # -> raw_records.csv
@@ -66,11 +68,11 @@ python3 plot_distance_energy.py # -> distance_energy_trend.png
 **1. A clear shift in daily step counts starting around mid-2025.** Before that point, daily totals are mostly under 10K steps; after it, they're consistently 10K–20K+. My first guess was that this was largely a tracking-consistency artifact (i.e., my phone just wasn't capturing data reliably before). I checked this directly rather than assuming it:
 
 - **Day-level completeness** (what % of days have *any* recorded step data) turned out to be near 100% almost the entire way through, from April 2023 onward — ruling out "the phone just wasn't tracking" as the explanation.
-- **Reading density** (how many individual step-count entries land on an average day) does increase somewhat starting mid-2025 — roughly 30–40% more readings per day — but that's far too small to explain the ~2.5–3x jump in total daily steps.
+- **Reading density** (how many individual step-count entries land on an average day) does increase somewhat starting mid-2025 — roughly 30–40% more readings per day.
 
-**Conclusion:** the shift is mostly a real behavior change, not a measurement artifact — consistent with starting college and walking to classes, which is the explanation I had going in. The tracking-density increase is real but a minor contributor, not the main story. (I initially over-attributed this to tracking inconsistency before checking — worth being upfront that the more careful analysis walked that back.)
+**Conclusion:** the shift is mostly a real behavior change, not a total tracking failure — consistent with starting college and walking to classes, which is the explanation I had going in. That said, these two checks don't fully rule out a measurement-driven contribution: having a reading present each day doesn't guarantee every step was captured, and reading count isn't necessarily proportional to steps recorded (one reading can represent a different amount of activity than another). What the checks do establish is that a ~2.5–3x jump is too large to be explained by a ~30–40% increase in reading density alone, so real behavior change is the best-supported explanation, even though I can't fully quantify how much of the shift is measurement vs. behavior. (I initially over-attributed this to tracking inconsistency before checking, then stated the walked-back conclusion more confidently than the checks actually supported — worth being upfront about both.)
 
-**2. Weekdays average more steps than weekends, since starting college.** Restricted to the current, densely-tracked period (Aug 2025–present): weekdays average **12,589 steps**, weekends **11,485** — roughly a 10% difference. Consistent with extra walking on class days, though it's a modest gap, not a dramatic one.
+**2. Weekdays average more steps than weekends, over the Aug 2025–present period (roughly since starting college).** Restricted to this current, densely-tracked period: weekdays average **12,589 steps**, weekends **11,485** — roughly a 10% difference. Consistent with extra walking on class days, though it's a modest gap, not a dramatic one.
 
 **3. Walking speed and step length are very strongly correlated (r = 0.978).** Daily average walking speed and step length showed a strong positive correlation. These measures are physically related, and shared measurement methods (both likely derived from the same underlying stride-detection data) may contribute to the association. This analysis does not establish causation or separate genuine behavioral patterns from measurement effects.
 
@@ -89,12 +91,14 @@ python3 plot_distance_energy.py # -> distance_energy_trend.png
 ## Limitations
 
 - No Apple Watch data in this export — no heart rate or sleep data, only iPhone motion-sensor metrics (steps, distance, walking quality).
-- The weekday/weekend and correlation analyses cover roughly the last year (since Aug 2025) rather than the full 3+ years, by choice — this reflects my current routine rather than a data-quality exclusion.
+- The weekday/weekend comparison covers roughly the last year (since Aug 2025) rather than the full 3+ years, by choice — this reflects my current routine rather than a data-quality exclusion. The speed/step-length correlation, by contrast, uses the full 3+ year dataset (r = 0.978); restricted to Aug 2025–present alone it's r = 0.942, so the relationship holds either way rather than being an artifact of one date range.
 - This is one person's data — not meant to generalize beyond my own patterns.
 - The speed/step-length correlation may partly reflect how the two metrics are measured, not just biomechanics — see write-up above.
+- `extract_data.py` parses the XML with line-based regex rather than a proper XML parser, and keeps only `type`, `start_date`, and `value` per record — not unit or source. I manually verified directly against the export that all six metrics use one consistent unit throughout (mph, mi, Cal, in, count) and one source (my iPhone), so this isn't biasing any result here, but the pipeline itself can't check that automatically today.
 
 ## What's next
 
+- Preserve unit and source metadata during extraction, and parse the XML with a real streaming parser (e.g. `xml.etree.ElementTree.iterparse`) instead of line-based regex, so unit/source consistency is checked automatically instead of by hand.
 - Final polish pass and a proper results write-up.
 
 ## Lessons learned

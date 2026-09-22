@@ -47,6 +47,15 @@ wide = daily.pivot(
     values="value",
 ).sort_index()
 
+# 8b. Reindex to a complete daily calendar. pivot() only creates a row for
+# a date if at least one reading exists that day - a date with ZERO readings
+# of any type is silently absent, not just missing values within a row.
+# Reindexing makes those dates show up explicitly as NaN rows instead.
+wide.index = pd.to_datetime(wide.index)
+full_calendar = pd.date_range(wide.index.min(), wide.index.max(), freq="D")
+wide = wide.reindex(full_calendar)
+wide.index.name = "date"
+
 # 9. Save the table, including the date index
 wide.to_csv("daily_summary.csv")
 
