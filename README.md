@@ -16,6 +16,7 @@ Turns a raw Apple Health export (`export.xml`, 179MB, 4M+ lines) into clean, ana
 6. **`speed_vs_steplength.py`** — checks the relationship between walking speed and step length.
 7. **`plot_speed_trend.py`** — plots daily walking speed over time with a 30-day rolling average, marking the date I moved to campus.
 8. **`compare_speed.py`** — compares average walking speed in the 60 days before vs. the 60 days after the move, using equal-length, non-overlapping windows.
+9. **`plot_distance_energy.py`** — plots daily walking/running distance and active energy burned over time, each with a 30-day rolling average, marking both my summer trip to India and my return to USF.
 
 ## Tech used
 
@@ -34,8 +35,9 @@ health-data-analysis/
 ├── speed_vs_steplength.py          # daily_summary.csv -> speed_vs_steplength.png
 ├── plot_speed_trend.py             # daily_summary.csv -> speed_trend.png
 ├── compare_speed.py                # before/after move-date comparison (prints results)
+├── plot_distance_energy.py         # daily_summary.csv -> distance_energy_trend.png
 ├── daily_summary.csv          # cleaned daily data (committed — aggregated, not raw)
-├── daily_steps.png, weekday_vs_weekend.png, speed_vs_steplength.png, speed_trend.png
+├── daily_steps.png, weekday_vs_weekend.png, speed_vs_steplength.png, speed_trend.png, distance_energy_trend.png
 ├── .gitignore                 # excludes the raw export (size + personal-data privacy)
 └── README.md
 ```
@@ -56,6 +58,7 @@ python3 weekday_weekend.py    # -> weekday_vs_weekend.png
 python3 speed_vs_steplength.py  # -> speed_vs_steplength.png
 python3 plot_speed_trend.py     # -> speed_trend.png
 python3 compare_speed.py        # -> prints before/after move comparison
+python3 plot_distance_energy.py # -> distance_energy_trend.png
 ```
 
 ## What I found
@@ -75,6 +78,10 @@ python3 compare_speed.py        # -> prints before/after move comparison
 
 ![Walking speed over time](speed_trend.png)
 
+**5. Distance and active energy also decreased during my summer return to India and increased after returning to USF.** This supports finding #4: recorded activity levels track changes in my location and daily routine, rather than appearing to be a one-time fluctuation tied to my initial move. (Note: because both metrics use a 30-day rolling average, the visible dip and recovery lag a few weeks behind the actual travel dates — the smoothing blends in the prior weeks' higher values before it catches up.)
+
+![Distance and active energy over time](distance_energy_trend.png)
+
 ## Data & privacy
 
 `export.xml` and `raw_records.csv` are intentionally excluded from this repo (see `.gitignore`) for two reasons: they're large (179MB / 25MB), and they contain real personal health data at a fine-grained, timestamped level. `daily_summary.csv` — aggregated to daily totals — is committed, since I'm comfortable sharing that level of detail publicly.
@@ -88,7 +95,6 @@ python3 compare_speed.py        # -> prints before/after move comparison
 
 ## What's next
 
-- Explore distance and energy-burned trends, not just steps.
 - Final polish pass and a proper results write-up.
 
 ## Lessons learned
